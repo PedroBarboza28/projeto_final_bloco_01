@@ -1,153 +1,120 @@
 import read = require("readline-sync");
+import { Filmes } from "./src/model/Filmes";
+import { Series } from "./src/model/Series";
+import { Controller } from "./controller/Controller";
 
-let tipoMidia = ["Filmes", "Séries"];
-let filmes: FilmesG[] = [];
-let series: SeriesG[] = [];
-let nome: string, tipo: number, genero: string;
+export function main() {
+    let controller: Controller = new Controller();
+    let opcao, nome, id, tipo: any;
+    const tipos = ['Filmes', 'Series'];
+    let midia: any = null;
 
+    const filmes: Filmes = new Filmes(controller.gerarNumero(), 'Filmes', 1, 1);
+    filmes.visualizar();
 
-class FilmesG {
-    constructor(public nome: string) { }
-}
-
-class SeriesG {
-    constructor(public nome: string) { }
-}
-
-
-export function main(this: any) {
-
-    console.log("*****************************************************");
-    console.log("                                                     ");
-    console.log("        CINEMATRIX - Sua plataforma streaming        ");
-    console.log("                                                     ");
-    console.log("*****************************************************");
-    console.log("                                                     ");
-    console.log("            Opções:                                  ");
-    console.log("            1 - Cadastrar Mídia                      ");
-    console.log("            2 - Listar Todas as Mídias               ");
-    console.log("            3 - Atualizar Mídia                      ");
-    console.log("            4 - Deletar Mídia                        ");
-    console.log("            5 - Procurar por Classificação           ");
-    console.log("            6 - Sair                                 ");
-    console.log("                                                     ");
-    console.log("*****************************************************");
-    console.log("                                                     ");
+    const series: Series = new Series(controller.gerarNumero(), 'Serie', 2, 2);
+    series.visualizar();
 
     while (true) {
-        exibirMenu();
-        let opcao = read.questionInt("\nEntre com a opção desejada: ");
+        console.log("*****************************************************");
+        console.log("                                                     ");
+        console.log("        CINEMATRIX - Sua plataforma streaming        ");
+        console.log("                                                     ");
+        console.log("*****************************************************");
+        console.log("                                                     ");
+        console.log("            Opções:                                  ");
+        console.log("            1 - Adicionar Mídia                      ");
+        console.log("            2 - Listar Todas as Mídias               ");
+        console.log("            3 - Consultar Mídia por id               ");
+        console.log("            4 - Atualizar Filmes e Séries            ");
+        console.log("            5 - Deletar Mídia                        ");
+        console.log("            6 - Sair                                 ");
+        console.log("                                                     ");
+        console.log("*****************************************************");
+        console.log("                                                     ");
+
+        console.log("Entre com a opção desejada: ");
+        opcao = read.questionInt("");
+
+        if (opcao == 6) {
+            console.log("\nCINEMATRIX - Sua plataforma streaming!");
+            sobre();
+            console.log("");
+            process.exit(0);
+        }
 
         switch (opcao) {
-            case 1:
+            case 1 :
+            console.log("\n\nCadastrar Mídia\n\n");
 
-                console.log("\n\nCadastrar Séries ou Filmes\n\n");
-
-                console.log("Digite o Nome da Mídia: ");
-                nome = read.question("");
-
-                console.log("Digite 1 Para Filmes e 2 Para séries: ");
-                tipo = read.keyInSelect(tipoMidia, "", { cancel: false }) + 1;
-
+            tipo = read.keyInSelect(tipos, "", { cancel: false }) + 1;
+            
                 switch (tipo) {
+
                     case 1:
-                        console.log("Filmes:");
-                        filmes.push(new FilmesG(nome));
-                        console.log("Filme cadastrado com sucesso!");
+                        console.log("Digite o nome do Filme:");
+                        nome = read.question("");
+                        controller.cadastrar(new Filmes(controller.gerarNumero(), nome, tipo, opcao));
                         break;
+
                     case 2:
-                        console.log("Séries: ");
-                        series.push(new SeriesG(nome));
-                        console.log("Série cadastrada com sucesso!");
+                        console.log("Digite o nome da Série: ");
+                        nome = read.question("");
+                        controller.cadastrar(new Series(controller.gerarNumero(), nome, tipo, opcao));
                         break;
                 }
 
                 keyPress();
-
                 break;
             case 2:
-
                 console.log("\n\nListar todas as Mídias\n\n");
 
-                console.log("Filmes:");
-                listarFilmes();
-
-                console.log("\nSéries:");
-                listarSeries();
+                controller.listarMidias();
 
                 keyPress();
-
-
                 break;
             case 3:
-
-
-                console.log("\n\nAtualizar Filmes ou Séries\n\n");
-
-                console.log("Digite o nome da mídia: ");
-                nome = read.question("");
-
-                let midiaEncontrada: FilmesG | SeriesG | null = buscarMidia(nome);
-
-                if (midiaEncontrada) {
-                    console.log("Digite o novo nome da mídia: ");
-                    let novoNome = read.question("");
-
-                    midiaEncontrada.nome = novoNome;
-                    console.log("Mídia atualizada com sucesso!");
-                } else {
-                    console.log("Mídia não encontrada!");
-                }
+                console.log("\n\nConsultar Mídias - por número\n\n");
+                console.log("Digite o Código do Produto: ");
+                id = read.questionInt("");
+                controller.procurarPorNumero(id);
 
                 keyPress();
-
                 break;
+
             case 4:
+                console.log("\n\nAtualizar Filmes e Séries\n\n");
 
-                console.log("\n\nDeletar Mídia\n\n");
+                console.log("Digite o id da Mídia: ");
+                id = read.questionInt("");
 
-                console.log("Digite o Nome Da Mídia: ");
-                nome = read.question("");
+                midia = controller.buscarNoArray(id);
 
-                let indexFilme = filmes.findIndex((filme) => filme.nome === nome);
-                let indexSerie = series.findIndex((serie) => serie.nome === nome);
-
-                if (indexFilme !== -1) {
-                    filmes.splice(indexFilme, 1);
-                    console.log("Filme deletado com sucesso!");
-                } else if (indexSerie !== -1) {
-                    series.splice(indexSerie, 1);
-                    console.log("Série deletada com sucesso!");
+                if (midia != null) {
+                    console.log("Digite o Nome: ");
+                    nome = read.question("");
+                    midia.nome = nome;
+                    controller.atualizar(midia);
+                    console.log("Projeto Atualizado com Sucesso!");
                 } else {
-                    console.log("Mídia não encontrada!");
+                    console.log("\nA Conta número: " + id + " não foi encontrada!");
                 }
 
                 keyPress();
-
                 break;
             case 5:
-                console.log("\nPor Classificação: ");
+                console.log("\n\nApagar uma Conta\n\n");
 
-                console.log("\nDigite o Tipo de Mídia (Filmes ou Séries): ");
-                genero = read.question("");
+                console.log("\nDigite o id da Mídia: ");
+                id = read.questionInt("");
+                controller.deletar(id);
 
-                if (genero.toLowerCase() === "filmes") {
-                    console.log("Listando todos os filmes:");
-                    listarFilmes();
-                } else if (genero.toLowerCase() === "séries") {
-                    console.log("Listando todas as séries:");
-                    listarSeries();
-                } else {
-                    console.log("Tipo de mídia inválido!");
-                }
+                keyPress();
                 break;
-            case 6:
-                console.log("\nSaindo do programa...");
-                process.exit(0);
-
-                break;
+           
             default:
                 console.log("\nOpção Inválida!\n");
+
                 keyPress();
                 break;
         }
@@ -156,14 +123,14 @@ export function main(this: any) {
 
 function sobre(): void {
     console.log("\n*****************************************************");
-    console.log("Projeto Desenvolvido por Pedro B Machado: ");
+    console.log("Projeto Desenvolvido por Pedro b Machado: ");
     console.log("Generation Brasil - generation@generation.org");
     console.log("github.com/conteudoGeneration");
     console.log("*****************************************************");
 }
 
 function keyPress(): void {
-    console.log(colors.reset, "");
+    console.log("");
     console.log("\nPressione enter para continuar...");
     read.prompt();
 }
